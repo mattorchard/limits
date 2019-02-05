@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Limits - Options</title>
+    <link rel="stylesheet" type="text/css" media="screen" href="options.css" />
+    <script defer src="options.js"></script>
+</head>
+<body>
+    <header class="banner">
+        <h1 class="banner__heading">Limits > Options</h1>
+    </header>
+    <main class="main-content">
+        <div class="main-content__header">
+            <h2 class="main-content__heading">Policies</h2>
+            <button type="button" class="pill-button add-button">
+                + Add Policy
+            </button>
+        </div>
+        <ul id="policyList" class="policy-list">
+            <li class="empty-list-placeholder">
+                Your policies will appear here
+            </li>
+        </ul>
+        
+    </main>
+    <template id="policyTemplate">
+        <li class="policy">
+            <form class="policy-form disabled">
+                <div class="policy-form__actions">
+                    <button name="edit"
+                        class="pill-button hide-on-enabled fill"
+                        type="button">
+                        Edit
+                    </button>
+                    <button name="delete"
+                        class="pill-button hide-on-disabled fill"
+                        type="button">
+                        Delete
+                    </button>
+                </div>
+                <fieldset class="policy-form__fields" disabled>
+                    <label class="passive-label">
+                        URL
+                        <input name="url"
+                            placeholder="example.com"
+                            spellcheck="false"
+                            required
+                            aria-required
+                            class="simple-input"
+                            type="text">
+                    </label>
+                    <label class="passive-label limit-label">
+                        LIMIT
+                        <span>
+                            <input name="limit"
+                                required
+                                aria-required
+                                class="simple-input limit-readout"
+                                type="number"
+                                maxlength="4"
+                                value="1.5">
+                            hours
+                        </span>
+                    </label>
+                    </label>
+                    <button name="save"
+                        class="pill-button hide-on-disabled save-button fill"
+                        type="submit">
+                        Save
+                    </button>
+                </fieldset>
+            </form>
+        </li>
+    </template>
+</body>
+</html>
