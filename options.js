@@ -1,5 +1,5 @@
 (function optionsMain() {
-    const policies = [];
+    let policies = [];
     const policyList = document.querySelector("#policyList");
     const policyTemplate = document.querySelector("#policyTemplate");
 
@@ -7,10 +7,8 @@
     chrome.storage.sync.get(['policies'], response => {
         const policiesCloud = response['policies'];
         if (policiesCloud) {
-            policiesCloud.forEach(policy => {
-                policies.push(policy);
-                addPolicyElem(policy);
-            });
+            policies = policiesCloud;
+            policies.forEach(addPolicyElem);
         }
         onPoliciesLoaded();
     });
@@ -29,16 +27,33 @@
         document.querySelectorAll(".pre-policy-load")
         .forEach(elem => elem.classList.remove("pre-policy-load"));
     
-    const savePolicy = async policy => {
-        // Todo: This
-        debugger;
-        return policy.id;
+    const saveAllPolicies = async () => new Promise(resolve => {
+        console.log("Saving policies", policies)
+        chrome.storage.sync.set({
+            'policies': policies
+        }, resolve);
+    });
+    
+    const savePolicy = async editedPolicy => {
+        const {id, url} = editedPolicy;
+        if (!url) {
+            throw new Error("Policy must have a url");
+        } else if (url !== id && policies.some(policy => policy.url === url)) {
+            throw new Error("Policy must have a UNIQUE url");
+        } else {
+            if (id) {
+                // Remove old policy
+                policies = policies.filter(policy => policy.url !== id);
+            }
+            policies.push(editedPolicy);
+        }
+        await saveAllPolicies();
+        return editedPolicy.url;
     };
 
     const deletePolicy = async policyId => {
-        // Todo: This
-        debugger;
-        return true;
+        policies = policies.filter(policy => policy.url !== policyId);
+        return saveAllPolicies();
     }
 
     const setEditable = (policyElem, editable) => {
@@ -52,24 +67,22 @@
         }
     }
 
+
     const addPolicyElem = policy => {
         const clone = document.importNode(policyTemplate.content, true);
-        // Limit Slider
-        const limitReadout = clone.querySelector('input[name="limit"]');
-        // const limitSlider = clone.querySelector('input[name="limit-slider"]');
-        // limitSlider.addEventListener("input", event => limitReadout.value = event.currentTarget.value);
+
         // Save Option
         const policyForm = clone.querySelector('.policy-form');
         policyForm.addEventListener("submit", async event => {
             event.preventDefault();
+            const policyElem = event.currentTarget.closest(".policy");
             try {
-                const policyElem = event.currentTarget.closest(".policy");
                 const policy = getPolicyFields(policyElem);
                 const id = await savePolicy(policy);
                 policyElem.id = id;
                 setEditable(policyElem, false);
             } catch (error) {
-                console.error("Error trying to save policy", error);
+                console.warn("Failed to save policy", error)
             }
         });
 
@@ -87,7 +100,6 @@
         deleteButton.addEventListener("click", async event => {
             const policyElem = event.currentTarget.closest(".policy");
             if (policyElem.id) {
-                console.warn("Unsupported operation, this feature has not yet been added");
                 try {
                     await deletePolicy(policyElem.id);
                     policyElem.remove();
@@ -100,14 +112,25 @@
             }
         });
 
+        const urlField = clone.querySelector('input[name="url"]');
+        urlField.addEventListener("change", event => {
+            const target = event.currentTarget;
+            const value = target.value;
+            target.setAttribute("value", value);
+            const matchingUrls = document.querySelectorAll(`input[name="url"][value="${value}"]`);
+            target.setCustomValidity(matchingUrls.length > 1 ? "URL must be unqique" : "")
+        });
+
         const policyElem = clone.querySelector(".policy");
         if (policy) {
             const {url, limit} = policy;
             policyElem.id = url;
             
-            const urlField = clone.querySelector('input[name="url"]');
             urlField.value = url;
+            urlField.setAttribute("value", url);
+            const limitReadout = clone.querySelector('input[name="limit"]');
             limitReadout.value = limit;
+            
         } else {
             setEditable(policyElem, true);
         }

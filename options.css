@@ -66,6 +66,7 @@ input[type=number]::-webkit-outer-spin-button {
     display: none;
 }
 .spinner {
+    cursor: wait;
     content: " ";
     display: inline-block;
     width: 2ch;
