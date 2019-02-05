@@ -59,6 +59,27 @@ input[type=number]::-webkit-outer-spin-button {
     font-size: 1.5em;
     margin-left: auto;
 }
+.add-button.pre-policy-load {
+    display:none;
+}
+.spinner:not(.pre-policy-load) {
+    display: none;
+}
+.spinner {
+    content: " ";
+    display: inline-block;
+    width: 2ch;
+    height: 2ch;
+    border: slateblue .1em solid;   
+    border-radius: 50%;
+    border-right: none;
+    border-top: none;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    from { transform: rotateZ(0); }
+    to { transform: rotateZ(1turn); }
+}
 .policy-list {
     list-style: none;
     padding-left: 0;

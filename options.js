@@ -1,6 +1,19 @@
 (function optionsMain() {
+    const policies = [];
     const policyList = document.querySelector("#policyList");
     const policyTemplate = document.querySelector("#policyTemplate");
+
+    // Load Policies from cloud
+    chrome.storage.sync.get(['policies'], response => {
+        const policiesCloud = response['policies'];
+        if (policiesCloud) {
+            policiesCloud.forEach(policy => {
+                policies.push(policy);
+                addPolicyElem(policy);
+            });
+        }
+        onPoliciesLoaded();
+    });
 
     const getPolicyFields = policyElem => {
         const limitReadout = policyElem.querySelector('input[name="limit"]');
@@ -10,15 +23,21 @@
             url: url.value,
             id: policyElem.id
         }
-    } ;
+    };
+
+    const onPoliciesLoaded = () => 
+        document.querySelectorAll(".pre-policy-load")
+        .forEach(elem => elem.classList.remove("pre-policy-load"));
     
     const savePolicy = async policy => {
         // Todo: This
+        debugger;
         return policy.id;
     };
 
     const deletePolicy = async policyId => {
         // Todo: This
+        debugger;
         return true;
     }
 
@@ -76,7 +95,8 @@
                     console.error("Failed to delete policy", error);
                 }
             } else {
-                console.warn("Cannot delete an item until it has an ID");
+                console.warn("Delete on an unsaved policy");
+                policyElem.remove();
             }
         });
 
@@ -93,13 +113,9 @@
         }
         
         policyList.appendChild(clone);
+
     }
-    
-    addPolicyElem({url: "netflix.com", limit: 1.5});
-    addPolicyElem({url: "youtube.com", limit: 1});
-    addPolicyElem();
-    
+
     const addButton = document.querySelector(".add-button");
     addButton.addEventListener("click", () => addPolicyElem());
-
 })();
