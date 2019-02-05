@@ -8,10 +8,19 @@
     setInterval(() => currentDate = formatDate(new Date()), 5 * MINUTE);
 
     // Defining Patterns and policies
-    const limits = {
-        'youtube\.com': HOUR,
-        'netflix\.com': HOUR * 1.25
-    };
+    let limits = {};
+    
+    const updatePolicies = () => chrome.storage.sync.get(['policies'], response => {
+        const policies = response.policies;
+        limits = {};
+        policies.forEach(policy => {
+            limits[policy.url] = HOUR * policy.limit;
+        });
+        console.log("Policies loaded", limits);
+    });
+
+    updatePolicies();
+    setInterval(updatePolicies, MINUTE);
     const getPatternForUrl = url => Object.keys(limits).find(pattern => new RegExp(pattern).test(url));
 
     // Message for blocking the tab
