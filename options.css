@@ -1,7 +1,7 @@
 .banner {
     user-select: none;
     color: white;
-    background-color: darkslateblue
+    background-color: darkslateblue;
 }
 .banner__heading {
     margin: 0;
@@ -42,6 +42,12 @@
     padding: 1em;
     margin-bottom: 1em;
      font-size: 1.5em;
+}
+.policy-form .simple-input {
+    transition: color .5s ease;
+}
+.policy-form.disabled:hover .simple-input  {
+    color: slateblue;
 }
 @supports(display: grid) {
     @media only screen and (min-width: 1000px) {
