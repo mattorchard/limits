@@ -1,0 +1,94 @@
+body {
+    padding: 0;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #f6f6f6;
+}
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+.pill-button {
+    font-size: 1em;
+    text-transform: lowercase;
+    font-variant: small-caps;
+    color: slateblue;
+    border: 5px solid slateblue;
+    padding: .15em .35em .2em;
+    background-color: white;
+    border-radius: 1000px;
+    font-weight: bold;
+    transition-duration: 0.35s;
+    transition-property: color, background-color;
+    cursor: pointer;
+}
+.pill-button:hover, .pill-button:focus, .pill-button.fill {
+    outline: none;
+    background-color: slateblue;
+    color: white;
+}
+.spinner {
+    cursor: wait;
+    content: " ";
+    display: inline-block;
+    width: 2ch;
+    height: 2ch;
+    border: slateblue .1em solid;   
+    border-radius: 50%;
+    border-right: none;
+    border-top: none;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    from { transform: rotateZ(0); }
+    to { transform: rotateZ(1turn); }
+}
+.empty-list-placeholder {
+    display: none;
+    color: grey;
+}
+.empty-list-placeholder:first-child:last-child {
+    display: block;
+}
+.simple-input {
+    width: 100%;
+    background-color: transparent;
+    margin: .1em .25em;
+    padding: .0 .25ch;
+    border: none;
+    border-bottom: .1em solid grey;
+    border-color: grey;
+    font-size: 1.25em;
+    color: black;
+    min-width: 0;
+    transition: border-color .3s ease;
+}
+.simple-input:hover {
+    border-color: black;
+}
+.simple-input:disabled {
+    padding-bottom: .1em;
+    border-bottom: none;
+    color: grey;
+}
+.simple-input:focus {
+    border-bottom: .1em solid slateblue;
+    outline: none;
+}
+.passive-label {
+    color: grey;
+}
+.passive-label > * {
+    display: block;
+}
+form.disabled .hide-on-disabled {
+    display: none;
+}
+form:not(.disabled) .hide-on-enabled {
+    display: none;
+}

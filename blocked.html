@@ -2,13 +2,23 @@
 <html>
 <head>
     <title>Limits - Blocked</title>
+    <link rel="stylesheet" type="text/css" media="screen" href="common.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="blocked.css">
+    <script defer type="text/javascript" src="blocked.js"></script>
 </head>
-<body>
+<body class="center blocked-body">
     <header>
-        <h1>Blocked</h1>
+        <h1 class="cube">
+            <div class="cube-face front center">Blocked</div>
+            <div class="cube-face side center">Blocked</div>
+            <div class="cube-face top center">Blocked</div>
+        </h1>
     </header>
     <main>
-        <p>Looks like you've hit your limit</p>
+        <p>
+            Looks like you've hit your limit for
+            <span class="triplet url-field">some site</span>
+        </p>
     </main>
 </body>
 </html>
