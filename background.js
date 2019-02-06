@@ -23,9 +23,10 @@
     setInterval(updatePolicies, MINUTE);
     const getPatternForUrl = url => Object.keys(limits).find(pattern => new RegExp(pattern).test(url));
 
-    const blockTab = tabId => {
-        const url = chrome.extension.getURL("blocked.html");
-        chrome.tabs.update(tabId, {url});
+    const blockTab = (tabId, blockedUrl) => {
+        const baseUrl = chrome.extension.getURL("blocked.html");
+        chrome.tabs.update(tabId, {url: `${baseUrl}?url=${blockedUrl}`});;
+        tabsOnPagesUnderWatch[tabId] = null;
     };
 
     // Retrieving and updating cloud counts
@@ -79,7 +80,7 @@
                 tabsOnPagesUnderWatch[tabId] = urlUnderWatch;
                 if (shouldBlock(urlUnderWatch)) {
                     console.log("Insta-block");
-                    blockTab(tabId);
+                    blockTab(tabId, urlUnderWatch);
                 }
             } else {
                 tabsOnPagesUnderWatch[tabId] = null;
@@ -140,7 +141,7 @@
         Object.values(activeTabs).forEach(activeTabId => {
             const url = tabsOnPagesUnderWatch[activeTabId];
             if (shouldBlock(url)) {
-                blockTab(activeTabId);
+                blockTab(activeTabId, url);
             }
         });
     }
