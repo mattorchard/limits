@@ -136,6 +136,9 @@
         }
         
         policyList.appendChild(clone);
+        if (!policy) {
+            urlField.focus();
+        }
 
     }
 
