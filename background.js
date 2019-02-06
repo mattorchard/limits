@@ -1,4 +1,4 @@
-(function background(messageCode) {
+(function background() {
 
     // Time Management
     const MINUTE = 60 * 1000;
@@ -23,11 +23,9 @@
     setInterval(updatePolicies, MINUTE);
     const getPatternForUrl = url => Object.keys(limits).find(pattern => new RegExp(pattern).test(url));
 
-    // Message for blocking the tab
     const blockTab = tabId => {
-        chrome.tabs.sendMessage(tabId, {
-            message: messageCode
-        });
+        const url = chrome.extension.getURL("blocked.html");
+        chrome.tabs.update(tabId, {url});
     };
 
     // Retrieving and updating cloud counts
@@ -124,7 +122,7 @@
 
     // Checking for urls of interest in active tabs
     const LOCAL_REFRESH_INTERVAL = 2000;
-    setInterval(() => {
+    const syncCountsWithCloud = () => {
         // Find urls that should be increment
         const watchedUrlsOnActiveTabs = new Set();
         Object.values(activeTabs).forEach(activeTabId => {
@@ -145,7 +143,7 @@
                 blockTab(activeTabId);
             }
         });
-    }, LOCAL_REFRESH_INTERVAL);
-
-    // Reset
-})("Matt's secret message code");
+    }
+    syncCountsWithCloud();
+    setInterval(syncCountsWithCloud, LOCAL_REFRESH_INTERVAL);
+})();
