@@ -31,7 +31,10 @@
         console.log("Saving policies", policies)
         chrome.storage.sync.set({
             'policies': policies
-        }, resolve);
+        }, () => {
+            chrome.extension.sendRequest({action: "reload-policies"});
+            resolve();
+        });
     });
     
     const savePolicy = async editedPolicy => {
@@ -134,7 +137,6 @@
         } else {
             setEditable(policyElem, true);
         }
-        
         policyList.appendChild(clone);
         if (!policy) {
             urlField.focus();
