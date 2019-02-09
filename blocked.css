@@ -13,7 +13,6 @@
     position: relative;
     color: #E33431cc;
     cursor: pointer;
-    transform-style: preserve-3d;
 }
 .triplet::before, 
 .triplet::after {
@@ -29,17 +28,17 @@
     transform: translate(0, 0);
 }
 .triplet::before {
-    transform: translate(-10%, -30%);
+    transform: translate(-.4em, -.4em);
     color: #F9D05Cdd;
 }
 .triplet::after {
-    transform: translate(10%, 30%);
+    transform: translate(.4em, .4em);
     color: #37B7BAdd;
 }
 .cube {
     transform-style: preserve-3d;
     position: relative;
-    animation: cube-spin 5s ease infinite;
+    animation: cube-spin 7s ease infinite;
     cursor: pointer;
     margin-bottom: 2em;
 }
@@ -53,7 +52,7 @@
     color: #E33431cc;
 }
 .cube-face.side {
-    transform: rotateY(90deg) translateZ(3ch) translateX(2.5ch);
+    transform: rotateY(90deg) translateZ(3.1ch) translateX(2.5ch);
     color: #37B7BAdd;
 }
 .cube-face.top {
@@ -64,4 +63,8 @@
     0% {transform: rotate3D(0, 0, 0, 90deg)}
     33% {transform: rotate3D(-1, 0, 0, 90deg)}
     66% {transform: rotate3D(0, -1, 0, 90deg)}
+}
+.block-description {
+    text-align: center;
+    transform-style: preserve-3d;
 }
