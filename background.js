@@ -16,11 +16,19 @@
         policies.forEach(policy => {
             limits[policy.url] = HOUR * policy.limit;
         });
+        removeUnwatchedTabs();
         console.log("Policies loaded", limits);
     });
 
     updatePolicies();
     setInterval(updatePolicies, MINUTE);
+
+    chrome.extension.onRequest.addListener(request => {
+        if (request.action === "reload-policies") {
+            updatePolicies();
+        }
+    });
+
     const getPatternForUrl = url => Object.keys(limits).find(pattern => new RegExp(pattern).test(url));
 
     const blockTab = (tabId, blockedUrl) => {
@@ -87,6 +95,12 @@
             }
         }
     });
+    const removeUnwatchedTabs = () => Object.entries(tabsOnPagesUnderWatch)
+        .forEach(([tabId, url]) => {
+            if (!getPatternForUrl(url)) {
+                tabsOnPagesUnderWatch[tabId] = null;
+            }
+        });
 
     const CLOUD_REFRESH_INTERVAL = 10000;
     // Update the cloud to contain the proper counts
