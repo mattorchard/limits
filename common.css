@@ -1,3 +1,6 @@
+:root {
+    scroll-behavior: smooth;
+}
 body {
     padding: 0;
     margin: 0;
@@ -17,8 +20,8 @@ input[type=number]::-webkit-outer-spin-button {
     font-size: 1em;
     text-transform: lowercase;
     font-variant: small-caps;
-    color: slateblue;
-    border: .15em solid slateblue;
+    color: #51C0C2;
+    border: .15em solid #51C0C2;
     padding: .15em .5em .2em;
     background-color: white;
     border-radius: 1000px;
@@ -29,16 +32,26 @@ input[type=number]::-webkit-outer-spin-button {
 }
 .pill-button:hover, .pill-button:focus, .pill-button.fill {
     outline: none;
-    background-color: slateblue;
+    background-color: #51C0C2;
     color: white;
 }
-.spinner {
+.pill-button.fill {
+    box-shadow: 0px 4px 12px rgba(81, 192, 194, 0.1);
+    transition: transform .2s ease;
+    backface-visibility: hidden;
+    -webkit-font-smoothing: subpixel-antialiased;
+}
+.pill-button.fill:hover, .pill-button.fill:focus {
+    transform: translate(-1px, -1px);
+}
+.spinner::after {
     cursor: wait;
     content: " ";
     display: inline-block;
-    width: 2ch;
-    height: 2ch;
-    border: slateblue .1em solid;   
+    margin: 0 1em;
+    width: 1em;
+    height: 1em;
+    border: #51C0C2 .1em solid;   
     border-radius: 50%;
     border-right: none;
     border-top: none;
@@ -47,13 +60,6 @@ input[type=number]::-webkit-outer-spin-button {
 @keyframes spin {
     from { transform: rotateZ(0); }
     to { transform: rotateZ(1turn); }
-}
-.empty-list-placeholder {
-    display: none;
-    color: grey;
-}
-.empty-list-placeholder:first-child:last-child {
-    display: block;
 }
 .simple-input {
     width: 100%;
@@ -77,7 +83,7 @@ input[type=number]::-webkit-outer-spin-button {
     color: grey;
 }
 .simple-input:focus {
-    border-bottom: .1em solid slateblue;
+    border-bottom: .1em solid #51C0C2;
     outline: none;
 }
 .passive-label {

@@ -6,24 +6,20 @@
     <link rel="stylesheet" type="text/css" media="screen" href="options.css" />
     <script defer src="options.js"></script>
 </head>
-<body>
+<body class="content-container">
     <header class="banner">
-        <h1 class="banner__heading">Limits > Options</h1>
+        <h1 class="banner__heading">Limits</h1>
+        <button type="button" class="pill-button add-button fill">
+            + Add Limit
+        </button>
     </header>
-    <main class="main-content">
-        <div class="main-content__header">
-            <h2 class="main-content__heading">Policies</h2>
-            <button type="button" class="pill-button add-button pre-policy-load fill">
-                + Add Policy
-            </button>
-        </div>
-        <span class="spinner pre-policy-load"></span>
+    <main class="">        
         <ul id="policyList" class="policy-list">
-            <li class="empty-list-placeholder">
-                Your policies will appear here
+            <li class="policy-placeholder">
+                Your limits will appear here
             </li>
         </ul>
-        
+        <div class="spinner pre-policy-load">Loading Policies</div>
     </main>
     <template id="policyTemplate">
         <li class="policy">
