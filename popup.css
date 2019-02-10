@@ -1,0 +1,119 @@
+:root {
+    --percent-remaining: 0%;
+}
+.popup-content-container {
+    height: auto;
+    background-color: white;
+    width: max-content;
+}
+.popup-banner {
+    margin: 0 0 .2em;
+    font-size: 1.5em;
+    display: flex;
+    justify-content: center;
+}
+.options-icon-link {
+    display: flex;
+}
+.options-icon {
+    width: 2em;
+    height: 2em;
+    margin: .5em .5em 0 auto;
+    color: #c0c0c0;
+    transition: transform 1s ease;
+}
+.options-icon:hover {
+    transform: rotateZ(1turn);
+}
+.triplet {
+    position: relative;
+    color: #E33431cc;
+    cursor: pointer;
+}
+.triplet::before, 
+.triplet::after {
+    mix-blend-mode: difference;
+    content: attr(data-triplet);
+    position: absolute;
+    left: 0;
+    z-index: -1;
+    transition: transform .5s ease;
+}
+:root:hover .triplet::before,
+:root:hover .triplet::after {
+    transform: translate(0, 0);
+}
+.triplet::before {
+    transform: translate(-.4em, -.3em);
+    color: #F9D05Cdd;
+}
+.triplet::after {
+    transform: translate(.4em, .3em);
+    color: #37B7BAdd;
+}
+.limit-progress-list {
+    list-style: none;
+    padding-left: 0;
+}
+.limit-progress {
+    position: relative;
+    color: white;
+    font-size: 2em;
+    padding-bottom: .25em;
+    cursor: pointer;
+}
+.limit-progress::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    box-shadow: 0 0 5px rgba(20,20,20,.6);
+    z-index: 1;
+    pointer-events: none;
+}
+.limit-progress:hover::after {
+    opacity: 1;
+}
+.progress-bar {
+    position: absolute;
+    top: 0;
+    z-index: -2;
+    width: 100%;
+    height: 100%;
+    /* background: linear-gradient(to right, #37B7BAdd, #E33431cc) */
+    background-color: #E75B58;
+}
+.progress-remaining {
+    position: absolute;
+    right: 0;
+    right: 0;
+    width: var(--percent-remaining);
+    height: 100%;
+    
+    background-color: #37B7BAdd;
+    overflow: hidden;
+}
+.progress-text {
+    padding: 0 1em;
+}
+.limit-placeholder {
+    display: none;
+    font-size: 1.25em;
+    margin: .5em;
+}
+.limit-placeholder:first-child:last-child {
+    display: block;
+}
+.limit-loading-spinner {
+    font-size: 1.5em;
+    text-align: center;
+}
+.limit-loading-spinner:not(.pre-load) {
+    display: none;
+}
+.progress-url {
+    opacity: .76;
+}

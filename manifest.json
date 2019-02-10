@@ -14,7 +14,8 @@
     "storage", "tabs"
   ],
   "browser_action": {
-    "default_icon": "Limits-128.png"
+    "default_icon": "Limits-128.png",
+    "default_popup": "popup.html"
   },
   "manifest_version": 2
 }
