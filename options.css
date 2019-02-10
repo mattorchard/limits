@@ -13,6 +13,7 @@
     position: sticky;
     top: 0;
     margin-top: 2em;
+    z-index: 1;
 }
 .banner__heading {
     font-size: 3em;
@@ -36,7 +37,8 @@
     box-shadow: 0 2px 6px lightgrey;
     padding: 1em;
     margin-bottom: 1em;
-     font-size: 1.5em;
+    font-size: 1.5em;
+    position: relative;
 }
 .policy-form .simple-input {
     transition: color .5s ease;
@@ -45,7 +47,7 @@
     color: #51C0C2;
 }
 @supports(display: grid) {
-    @media only screen and (min-width: 1000px) {
+    @media only screen and (min-width: 800px) {
         .policy {
             margin-bottom: 0;
         }
@@ -80,8 +82,21 @@
     font-size: .75em;
 }
 .policy-form__actions {
-    float: right;
+    top: 1.5em;
+    right: 1.5em;
+    position: absolute;
 }
 .save-button {
     margin-top: 0.5em;
+    bottom: 1.5em;
+    right: 1.5em;
+    position: absolute;
+}
+.url-field-row {
+    display: flex;
+    align-items: center;
+}
+.regex-label {
+    display: flex;
+    align-items: center;
 }

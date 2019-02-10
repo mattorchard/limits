@@ -8,10 +8,7 @@
             const usageData = response['daily-usage'];
             const policies = response['policies'];
             const currentDate = formatDate(new Date());
-
-            const usages = usageData.date === currentDate ? usageData.usages : {};
-            
-            
+            const usages = usageData.date === currentDate ? usageData.usages : {};            
             return resolve(policies.map(({url, limit}) => {
                 const used = usages[url] ? (usages[url] / HOUR) : 0;
                 const remaining = limit - used;
@@ -72,5 +69,5 @@
     // Remove the pre-load content
     document.querySelectorAll(".pre-load")
     .forEach(elem => elem.classList.remove("pre-load"));
-// }, 2500);
+// }, 3000);
 })();

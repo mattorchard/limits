@@ -39,13 +39,19 @@
                 <fieldset class="policy-form__fields" disabled>
                     <label class="passive-label">
                         URL
-                        <input name="url"
-                            placeholder="example.com"
-                            spellcheck="false"
-                            required
-                            aria-required
-                            class="simple-input"
-                            type="text">
+                        <span class="url-field-row">
+                            <input name="url"
+                                placeholder="example.com"
+                                spellcheck="false"
+                                required
+                                aria-required
+                                class="simple-input"
+                                type="text">
+                            <label class="regex-label">
+                                <input type="checkbox" name="regexFlag">
+                                Regex
+                            </label>
+                        </span>
                     </label>
                     <label class="passive-label limit-label">
                         LIMIT

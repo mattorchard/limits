@@ -16,10 +16,13 @@
     const getPolicyFields = policyElem => {
         const limitReadout = policyElem.querySelector('input[name="limit"]');
         const url = policyElem.querySelector('input[name="url"]');
+        const regexFlag = policyElem.querySelector('input[name="regexFlag"]');
+        
         return {
             limit: Number(limitReadout.value),
             url: url.value,
-            id: policyElem.id
+            id: policyElem.id,
+            regexFlag: regexFlag.checked
         }
     };
 
