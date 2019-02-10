@@ -17,7 +17,7 @@
         const limitReadout = policyElem.querySelector('input[name="limit"]');
         const url = policyElem.querySelector('input[name="url"]');
         return {
-            limit: limitReadout.value,
+            limit: Number(limitReadout.value),
             url: url.value,
             id: policyElem.id
         }
