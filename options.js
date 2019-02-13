@@ -35,7 +35,7 @@
         chrome.storage.sync.set({
             'policies': policies
         }, () => {
-            chrome.extension.sendRequest({action: "reload-policies"});
+            chrome.extension.sendRequest({action: "reloadPolicies"});
             resolve();
         });
     });
@@ -127,16 +127,18 @@
             target.setCustomValidity(matchingUrls.length > 1 ? "URL must be unqique" : "")
         });
 
+
         const policyElem = clone.querySelector(".policy");
         if (policy) {
-            const {url, limit} = policy;
+            const {url, limit, regexFlag} = policy;
             policyElem.id = url;
             
             urlField.value = url;
             urlField.setAttribute("value", url);
             const limitReadout = clone.querySelector('input[name="limit"]');
             limitReadout.value = limit;
-            
+            const regexCheckbox = clone.querySelector('input[name="regexFlag"]');            
+            regexCheckbox.checked = regexFlag;
         } else {
             setEditable(policyElem, true);
         }

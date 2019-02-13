@@ -1,21 +1,26 @@
 (async function () {
+    'use strict';
     const MINUTE = 60 * 1000;
     const HOUR = MINUTE * 60;
-    const formatDate = date => `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+    
+    const isToday = time => {
+        const otherDate = new Date(time);
+        const today = new Date();
+        return today.toDateString() === otherDate.toDateString();
+    }
 
-    const getData = () => new Promise(resolve => 
-        chrome.storage.sync.get(['daily-usage', 'policies'], response => {
-            const usageData = response['daily-usage'];
-            const policies = response['policies'];
-            const currentDate = formatDate(new Date());
-            const usages = usageData.date === currentDate ? usageData.usages : {};            
-            return resolve(policies.map(({url, limit}) => {
+    const getUsageStats = () => new Promise(resolve => 
+        chrome.storage.sync.get(['dailyUsages', 'policies'], ({dailyUsages, policies}) => {
+            const usages = (dailyUsages && isToday(dailyUsages.date)) ? dailyUsages.usages : {};
+            
+            const limitData = policies.map(({url, limit}) => {
                 const used = usages[url] ? (usages[url] / HOUR) : 0;
                 const remaining = limit - used;
                 const fractionRemaining = remaining / limit;
 
                 return { url, limit, used, remaining, fractionRemaining };
-            }));
+            });
+            return resolve(limitData);
         })
     );
 
@@ -35,19 +40,17 @@
     
     const limitUsageListElem = document.querySelector("#limitProgressList");
     const limitUsageTemplate = document.querySelector("#limitProgressItem");
+
     const addLimitUsageElem = limit => {
         const clone = document.importNode(limitUsageTemplate.content, true);
-        const progressRemainingElem = clone.querySelector(".progress-remaining");
-
+        
         const progressLabelElem = clone.querySelector(".progress-url");
-        progressLabelElem.innerHTML = `${limit.url}`;
-        
         const progressTimeLabelElem = clone.querySelector(".progress-time-left");
-        progressTimeLabelElem.innerHTML = formatTimeLeft(limit.remaining);
+        const progressRemainingElem = clone.querySelector(".progress-remaining");
         
-        progressRemainingElem.style.setProperty("--percent-remaining",
-            `${limit.fractionRemaining * 100}%`);
-
+        progressLabelElem.innerText = limit.url;
+        progressTimeLabelElem.innerText = formatTimeLeft(limit.remaining);
+        progressRemainingElem.style.setProperty("--percent-remaining", `${limit.fractionRemaining * 100}%`);
         
         limitUsageListElem.appendChild(clone);
     }
@@ -60,8 +63,7 @@
     }));
     
     // Fetch limit usages and add them to the display
-// setTimeout(async () => {
-    const limits = await getData();
+    const limits = await getUsageStats();
     limits.sort((limitA, limitB) =>
         limitA.fractionRemaining - limitB.fractionRemaining)
     .forEach(addLimitUsageElem);
@@ -69,5 +71,5 @@
     // Remove the pre-load content
     document.querySelectorAll(".pre-load")
     .forEach(elem => elem.classList.remove("pre-load"));
-// }, 3000);
+
 })();

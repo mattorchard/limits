@@ -143,7 +143,6 @@
 
     const onTabUpdated = (tabId, {url}) => {
         if (url) {
-            debugger;
             const policy = getPolicyMatchingUrl(url);
             if (policy && shouldBlock(policy)) {
                 blockTab(tabId, policy.url);
