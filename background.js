@@ -1,164 +1,166 @@
 (function background() {
+    'use strict';
+    /*##### Intervals #####*/
+    const SECOND = 1000;
+    const MINUTE = 60 * SECOND;
+    const HOUR = 60 * MINUTE;
+    const UPDATE_POLICIES_INTERVAL = 10 * MINUTE;
+    const SCAN_TABS_INTERVAL = 2.5 * SECOND;
+    const SYNC_COUNTS_INTERVAL = 10 * SECOND;
 
-    // Time Management
-    const MINUTE = 60 * 1000;
-    const HOUR = MINUTE * 60;
-    const formatDate = date => `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-    let currentDate = formatDate(new Date());
-    setInterval(() => currentDate = formatDate(new Date()), 5 * MINUTE);
+    /*##### Local copies #####*/
+    let policies = []; // Local policies
+    let cloudUsages = {}; // Cloud usage counts
+    let localUsages = {}; // Counts since last time cloud usages were updated
 
-    // Defining Patterns and policies
-    let limits = {};
+
+    const isToday = time => {
+        const otherDate = new Date(time);
+        const today = new Date();
+        return today.toDateString() === otherDate.toDateString();
+    }
+
+    /*##### Policy Management #####*/
+
+    // Fetches synced policies
+    const getCloudPolicies = () => new Promise(resolve => 
+        chrome.storage.sync.get(['policies'],
+            response => resolve(response.policies))
+    );
     
-    const updatePolicies = () => chrome.storage.sync.get(['policies'], response => {
-        const policies = response.policies;
-        limits = {};
-        policies.forEach(policy => {
-            limits[policy.url] = HOUR * policy.limit;
-        });
-        removeUnwatchedTabs();
-        console.log("Policies loaded", limits);
-    });
+    // Update local copy of policies
+    const updateLocalPolicies = async() => policies = await getCloudPolicies();
 
-    updatePolicies();
-    setInterval(updatePolicies, MINUTE);
+    /*##### Cloud Usage Count Management #####*/
 
-    chrome.extension.onRequest.addListener(request => {
-        if (request.action === "reload-policies") {
-            updatePolicies();
+    // Fetch cloud usages
+    const getCloudUsages = () => new Promise(resolve => 
+        chrome.storage.sync.get(['dailyUsages'], ({dailyUsages}) =>
+            resolve(isToday(dailyUsages && dailyUsages.date) ? dailyUsages.usages : {}))
+    );
+
+    // Update cloud usages
+    const setCloudUsages = usages => new Promise(resolve => 
+        chrome.storage.sync.set({
+            dailyUsages: {usages, date: Date.now()}
+        }, resolve)
+    );
+    
+    /*##### Counting and Blocking #####*/
+    const getAllActiveTabs = () => new Promise(resolve => chrome.tabs.query({active: true}, resolve));
+
+    const getPolicyMatchingUrl = url => {
+        // Limits should never block local files (eg: file / chrome-extension)
+        if (!url.startsWith("http")) {
+            return null;
         }
-    });
+        // Multiple policies may overlap, but only one will be incremented
+        return policies.find(policy => {
+            if (policy.regexFlag) {
+                return new RegExp(policy.url).test(url);
+            } else {
+                return url.includes(policy.url);
+            }
+        });
+    };
 
-    const getPatternForUrl = url => Object.keys(limits).find(pattern => new RegExp(pattern).test(url));
-
+    // Send the user to the blocked page with the url being limited
     const blockTab = (tabId, blockedUrl) => {
         const baseUrl = chrome.extension.getURL("blocked.html");
-        chrome.tabs.update(tabId, {url: `${baseUrl}?url=${blockedUrl}`});;
-        tabsOnPagesUnderWatch[tabId] = null;
+        chrome.tabs.update(tabId, {
+            url: `${baseUrl}?url=${blockedUrl}`
+        });
     };
 
-    // Retrieving and updating cloud counts
-    const getCloudUsages = () => new Promise(resolve => 
-        chrome.storage.sync.get(['daily-usage'], response => {
-            const data = response['daily-usage'];
-            if (data.date !== currentDate) {
-                return resolve({});
-            } else {
-                return resolve(data.usages);
-            }
-        })
-    );
-    const setCloudUsages = usages => new Promise(resolve => {
-        console.log("New clound usage counts", usages);
-        chrome.storage.sync.set({
-            'daily-usage': {usages, date: currentDate}
-        }, resolve);
-    });
+    const shouldBlock = ({limit, url}) => {
+        // Convert the limit (given in hours) to milliseconds
+        const timeAllowed =(limit) * HOUR;
+        // If there is no data locally or in the local version of the cloud counts
+        // then they have not used that url yet and we can assume time = 0
+        const timeUsed = (localUsages[url] || 0) + (cloudUsages[url] || 0);
 
-    // Count incrementing
-    let usageCountCloud = {};
-    let usageCountLocal = {};
-    const shouldBlock = url => {
-        const usedTime = 
-            (usageCountCloud[url] ? usageCountCloud[url] : 0) + 
-            (usageCountLocal[url] ? usageCountLocal[url] : 0);
-        return (usedTime > limits[url]);
-    }
+        return timeUsed >= timeAllowed;
+    };
 
-    // Tracking active tab
-    const activeTabs = {};
-    chrome.tabs.onActivated.addListener(({tabId, windowId}) => activeTabs[windowId] = tabId);
-
-    chrome.tabs.onRemoved.addListener(removedTabId => 
-        Object.entries(activeTabs).forEach(([windowId, tabId]) => {
-            if (removedTabId === tabId) {
-                activeTabs[windowId] = null;
-                console.log("Closed a tab", tabId);
-            }
-        })
-    );
-
-    // Tracking tab urls
-    const tabsOnPagesUnderWatch = {};
-    chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
-        const url = changeInfo.url
-        if (url) {
-            const urlUnderWatch = getPatternForUrl(url)
-            if (urlUnderWatch) {
-                tabsOnPagesUnderWatch[tabId] = urlUnderWatch;
-                if (shouldBlock(urlUnderWatch)) {
-                    console.log("Insta-block");
-                    blockTab(tabId, urlUnderWatch);
-                }
-            } else {
-                tabsOnPagesUnderWatch[tabId] = null;
-            }
-        }
-    });
-    const removeUnwatchedTabs = () => Object.entries(tabsOnPagesUnderWatch)
-        .forEach(([tabId, url]) => {
-            if (!getPatternForUrl(url)) {
-                tabsOnPagesUnderWatch[tabId] = null;
-            }
-        });
-
-    const CLOUD_REFRESH_INTERVAL = 10000;
-    // Update the cloud to contain the proper counts
-    setInterval(async () => {
-        try {
-            // Update local copy of cloud values
-            usageCountCloud = await getCloudUsages();
-            
-            // Merge local and cloud copies
-            if (Object.keys(usageCountLocal).length > 0) {
-                Object.entries(usageCountLocal).forEach(([url, timeUsed]) => {
-                    if (usageCountCloud[url]) {
-                        usageCountCloud[url] += timeUsed;
-                    } else {
-                        usageCountCloud[url] = timeUsed;
-                    }
-                });
-                // Push new cloud counts
-                await setCloudUsages(usageCountCloud);
-                usageCountLocal = {};
-            }
-        } catch (error) {
-            console.error("Failed to update usage cloud", error);
-        }
-    }, CLOUD_REFRESH_INTERVAL);
-
-    const incrementUsageCount = (url, refreshInterval) => {
-        if (usageCountLocal[url]) {
-            usageCountLocal[url] += refreshInterval;
+    // The local count increases by the amount of time between scans of tabs
+    const increaseLocalUsageCount = url => {
+        if (localUsages[url]) {
+            localUsages[url] += SCAN_TABS_INTERVAL;
         } else {
-            usageCountLocal[url] = refreshInterval;
+            localUsages[url] = SCAN_TABS_INTERVAL;
+        }
+    }
+
+    const scanTabsForLimitedUrls = async() => {
+        // Inactive tabs are not considered against a users limit
+        const activeTabs = await getAllActiveTabs();
+        
+        // Hashset to track what limits have already been counted in this interval
+        const tabsOnLimitedUrls = new Set();
+
+        activeTabs.forEach(({id, url}) => {
+            const policy = getPolicyMatchingUrl(url);
+            if (policy) {
+                const blockedUrl = policy.url;
+                // Increment the count for the url
+                if (!tabsOnLimitedUrls.has(blockedUrl)) {
+                    tabsOnLimitedUrls.add(blockedUrl);
+                    increaseLocalUsageCount(blockedUrl);
+                }
+                console.table("New local usage counts", localUsages);
+                if (shouldBlock(policy)) {
+                    blockTab(id, blockedUrl);
+                }
+            }
+        });
+    };
+
+    const synchronizeCounts = async() => {
+        // Keep a reference to the local usage counts in case they are not able to be synced
+        const localUsagesBackup = localUsages;
+        try {            
+            // Ensure local copy of cloud usage counts is up to date
+            cloudUsages = await getCloudUsages();
+            // Merge the local counts with the cloud usage counts
+            Object.entries(localUsages).forEach(([url, count]) => {
+                if (cloudUsages[url]) {
+                    cloudUsages[url] += count;
+                } else {
+                    cloudUsages[url] = count;
+                }
+            });
+            // Empty the local usage counts
+            localUsages = {};
+            // Sync the new usage stats to the cloud
+            await setCloudUsages(cloudUsages);
+            console.log("Synched usage counts", cloudUsages);
+        } catch(error) {
+            console.log("Failed to sync local and cloud usage counts", error);
+            // Reload the local usage counts, since these values were not synced
+            localUsages = localUsagesBackup;
         }
     };
 
-    // Checking for urls of interest in active tabs
-    const LOCAL_REFRESH_INTERVAL = 2000;
-    const syncCountsWithCloud = () => {
-        // Find urls that should be increment
-        const watchedUrlsOnActiveTabs = new Set();
-        Object.values(activeTabs).forEach(activeTabId => {
-            const urlUnderWatch = tabsOnPagesUnderWatch[activeTabId];
-            if (urlUnderWatch) {
-                watchedUrlsOnActiveTabs.add(urlUnderWatch);
+    const onTabUpdated = (tabId, {url}) => {
+        if (url) {
+            debugger;
+            const policy = getPolicyMatchingUrl(url);
+            if (policy && shouldBlock(policy)) {
+                blockTab(tabId, policy.url);
             }
-        });
-        
-        // Increment count of watched urls
-        console.log("Urls being counted", watchedUrlsOnActiveTabs);
-        watchedUrlsOnActiveTabs.forEach(url => incrementUsageCount(url, LOCAL_REFRESH_INTERVAL));
-        
-        // Block tabs that are beyond limit
-        Object.values(activeTabs).forEach(activeTabId => {
-            const url = tabsOnPagesUnderWatch[activeTabId];
-            if (shouldBlock(url)) {
-                blockTab(activeTabId, url);
-            }
-        });
-    }
-    syncCountsWithCloud();
-    setInterval(syncCountsWithCloud, LOCAL_REFRESH_INTERVAL);
+        }
+    };
+    
+    // Updates local policies initially, on interval, and when a change is specifically requested
+    updateLocalPolicies();
+    setInterval(updateLocalPolicies, UPDATE_POLICIES_INTERVAL);
+    chrome.extension.onRequest.addListener(request => 
+        (request.action === "reloadPolicies") && updateLocalPolicies()
+    );
+    // Scan tabs and block urls as needed
+    setInterval(scanTabsForLimitedUrls, SCAN_TABS_INTERVAL);
+    // Sync local and cloud counts
+    setInterval(synchronizeCounts, SYNC_COUNTS_INTERVAL);
+    chrome.tabs.onUpdated.addListener(onTabUpdated);
+
 })();
